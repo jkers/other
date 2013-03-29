@@ -1,8 +1,19 @@
 -module(s).
--export([send/1]).
+-export([client/0]).
 
-send(N) ->
-    {ok,Sock} = gen_tcp:connect("192.168.0.64",6000,[binary,{packet,0}]),
-    lists:foreach(fun(_) -> gen_tcp:send(Sock, ct:test()) end, lists:seq(1, N)),
-    ok = gen_tcp:close(Sock).
+client() ->
+    case gen_tcp:connect("127.0.0.1",6000,[binary]) of
+	{ok,Socket} ->
+	    send(Socket);   
+	{error,Reason} ->
+	    io:format("connect failed;~p",[Reason])
+   end.
+send(Socket) ->
+    case gen_tcp:send(Socket,ct:test()) of
+	ok -> ok;
+	{error,Reason} ->
+	    io:format("send failed:~p~n",[Reason])
+    end,
+    send(Socket).
+    
     
